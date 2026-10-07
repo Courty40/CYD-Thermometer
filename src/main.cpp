@@ -11,6 +11,9 @@
 #ifndef ONE_WIRE_PIN
 #define ONE_WIRE_PIN 27
 #endif
+#ifndef DISPLAY_INVERT
+#define DISPLAY_INVERT 1 // Set to 0 if your panel displays the correct colours without inversion.
+#endif
 
 namespace {
 constexpr uint16_t BACKGROUND = 0x0866;
@@ -229,6 +232,7 @@ void setup() {
     Serial.begin(115200);
     display.init();
     display.setRotation(1);
+    display.invertDisplay(DISPLAY_INVERT != 0);
     pinMode(TFT_BL, OUTPUT);
     digitalWrite(TFT_BL, TFT_BACKLIGHT_ON);
     frame.setColorDepth(8); // 76.8 KB full-screen buffer; avoids visible redraw flicker.
