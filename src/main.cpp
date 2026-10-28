@@ -1,3 +1,4 @@
+#include "FirmwareVersion.h"
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 #include <OneWire.h>
@@ -60,7 +61,7 @@ void label(Surface &screen, const char *text, int x, int y, uint16_t colour, uin
 }
 
 template <typename Surface>
-void drawScreen(Surface &screen, uint32_t now) {
+void drawScreen(Surface &screen) {
     screen.fillScreen(BACKGROUND);
     screen.setTextSize(1);
     screen.setTextDatum(TL_DATUM);
@@ -153,10 +154,10 @@ void drawScreen(Surface &screen, uint32_t now) {
 
 void paint(uint32_t now) {
     if (buffered) {
-        drawScreen(frame, now);
+        drawScreen(frame);
         frame.pushSprite(0, 0);
     } else {
-        drawScreen(display, now); // Graceful fallback if a frame buffer is unavailable.
+        drawScreen(display); // Graceful fallback if a frame buffer is unavailable.
     }
     dirty = false;
     lastPaint = now;
@@ -218,7 +219,7 @@ void scanSensor() {
         haveReading = false;
         status = Status::Starting;
         dirty = true;
-        Serial.println("DS18B20 found on GPIO27; starting conversion.");
+        Serial.printf("DS18B20 found on GPIO%d; starting conversion.\n", ONE_WIRE_PIN);
         beginConversion();
         return;
     }
@@ -230,6 +231,7 @@ void scanSensor() {
 
 void setup() {
     Serial.begin(115200);
+    Serial.printf("G1ROK CYD Thermometer v%s%s\n", THERMOMETER_VERSION, THERMOMETER_DEMO ? " DEMO" : "");
     display.init();
     display.setRotation(1);
     display.invertDisplay(DISPLAY_INVERT != 0);
