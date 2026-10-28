@@ -131,4 +131,4 @@ Created by Paul, **G1ROK**. Built with [TFT_eSPI](https://github.com/Bodmer/TFT_
 
 ## Licensing
 
-No reuse licence has been declared for the project source yet. Public availability does not itself grant permission to redistribute or relicense it. Third-party libraries retain their own licences.
+The original project source and documentation are available under the [MIT licence](LICENSE), including version 1.0.0. Copyright © 2026 Paul (G1ROK). Third-party libraries retain their own licences.
