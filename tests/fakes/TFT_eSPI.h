@@ -8,10 +8,12 @@
 #define TFT_BLUE 31
 #define TFT_WHITE 65535
 static bool fakeSpriteAvailable = true;
+static bool fakeDisplayInverted = false;
+static int fakeRotation = -1;
 static std::vector<std::string> drawn;
 class TFT_eSPI {
 public:
- void init() {} void setRotation(int) {} void invertDisplay(bool) {}
+ void init() {} void setRotation(int value) { fakeRotation=value; } void invertDisplay(bool value) { fakeDisplayInverted=value; }
  template<class... A> void fillScreen(A...) { drawn.clear(); }
  template<class... A> void setTextSize(A...) {}
  template<class... A> void setTextDatum(A...) {}

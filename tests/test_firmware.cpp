@@ -10,6 +10,15 @@ void tick(uint32_t ms) { fakeNow += ms; loop(); }
 int main() {
  fakeSpriteAvailable=false;
  setup();
+ assert(fakeRotation==1);
+ assert(fakeDisplayInverted==(DISPLAY_INVERT!=0));
+#if defined(ST7789_DRIVER)
+ assert(DISPLAY_INVERT==0);
+ assert(std::string(THERMOMETER_DISPLAY_NAME)=="ST7789 CYD2USB");
+#else
+ assert(DISPLAY_INVERT==1);
+ assert(std::string(THERMOMETER_DISPLAY_NAME)=="ILI9341 CYD");
+#endif
  assert(!buffered); // Exercise real direct-render fallback.
 #if THERMOMETER_DEMO
  assert(status==Status::Demo && haveReading && haveHistory);

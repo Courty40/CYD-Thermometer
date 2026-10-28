@@ -1,4 +1,5 @@
 #include "FirmwareVersion.h"
+#include "DisplayProfile.h"
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 #include <OneWire.h>
@@ -11,9 +12,6 @@
 #endif
 #ifndef ONE_WIRE_PIN
 #define ONE_WIRE_PIN 27
-#endif
-#ifndef DISPLAY_INVERT
-#define DISPLAY_INVERT 1 // Set to 0 if your panel displays the correct colours without inversion.
 #endif
 
 namespace {
@@ -231,7 +229,7 @@ void scanSensor() {
 
 void setup() {
     Serial.begin(115200);
-    Serial.printf("G1ROK CYD Thermometer v%s%s\n", THERMOMETER_VERSION, THERMOMETER_DEMO ? " DEMO" : "");
+    Serial.printf("G1ROK CYD Thermometer v%s | %s%s\n", THERMOMETER_VERSION, THERMOMETER_DISPLAY_NAME, THERMOMETER_DEMO ? " DEMO" : "");
     display.init();
     display.setRotation(1);
     display.invertDisplay(DISPLAY_INVERT != 0);

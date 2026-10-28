@@ -9,13 +9,18 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m pip install platformio==6.2.0 esptool==4.9.0
+      - run: python scripts/check_profiles.py
       - name: Test sensor behaviour and demo isolation
         run: |
           g++ -std=c++11 -Itests/fakes -Iinclude tests/test_firmware.cpp -o /tmp/thermometer-tests
           /tmp/thermometer-tests
           g++ -std=c++11 -DTHERMOMETER_DEMO=1 -Itests/fakes -Iinclude tests/test_firmware.cpp -o /tmp/thermometer-demo-tests
           /tmp/thermometer-demo-tests
-      - run: pio run -e cyd -e demo
+          g++ -std=c++11 -DST7789_DRIVER=1 -Itests/fakes -Iinclude tests/test_firmware.cpp -o /tmp/thermometer-st7789-tests
+          /tmp/thermometer-st7789-tests
+          g++ -std=c++11 -DST7789_DRIVER=1 -DTHERMOMETER_DEMO=1 -Itests/fakes -Iinclude tests/test_firmware.cpp -o /tmp/thermometer-st7789-demo-tests
+          /tmp/thermometer-st7789-demo-tests
+      - run: pio run -e cyd -e demo -e cyd_st7789 -e demo_st7789
       - run: python scripts/package_release.py
       - uses: actions/upload-artifact@v4
         with:

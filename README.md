@@ -2,6 +2,8 @@
 
 A small, colourful thermometer built around an ESP32 Cheap Yellow Display (CYD) and a DS18B20 temperature sensor. A semicircular dial gives an at-a-glance reading; a large digital display and session minimum/maximum show the detail.
 
+**Version 1.1.0 — choose ILI9341 or ST7789 firmware for your board.**
+
 **[Download the latest release](https://github.com/Courty40/CYD-Thermometer/releases/latest)** Â· **[G1ROK â€” Radio. Electronics. Making.](https://g1rok.co.uk)**
 
 ![Thermometer layout with simulated data, labelled DEMO](demo.png)
@@ -24,7 +26,16 @@ A small, colourful thermometer built around an ESP32 Cheap Yellow Display (CYD) 
 - A **4.7 kÎ©** pull-up resistor, unless already fitted to the sensor module.
 - A data-capable USB cable and a suitable USB power source.
 
-CYD is a family of boards. Check the display controller and connections before flashing: ST7789 and other variants are not supported by this release configuration. Touch hardware is not used. This repository retains the original board-specific display setup; this release has been built and checked automatically, but has not been physically retested on every CYD variant.
+CYD is a family of boards. Check the display controller and connections before flashing: Choose the matching build from the table below. Other controller types and different GPIO layouts are not supported by these configurations. Touch hardware is not used. This repository retains the original board-specific display setup; this release has been built and checked automatically, but has not been physically retested on every CYD variant.
+
+### Choose your display profile
+
+| Board configuration | Sensor environment | Demo environment | Colour configuration |
+| --- | --- | --- | --- |
+| ILI9341 CYD (default) | `cyd` | `demo` | ILI9341_2 driver; inversion on |
+| Common CYD2USB ST7789 | `cyd_st7789` | `demo_st7789` | ST7789 driver; BGR; inversion off |
+
+The ST7789 profile follows the [CYD2USB board reference](https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display/blob/main/DisplayConfig/CYD2USB/User_Setup.h), using a conservative 40 MHz SPI clock. Both profiles use the GPIO table below. The ST build is compiled and logic-checked but **awaits a physical display check**; it is not a universal ST7789 firmware. USB-port count is a clue, not proof of the controller or pinout. Serial startup identifies the selected display profile and firmware version.
 
 ### Sensor wiring
 
@@ -51,16 +62,21 @@ This project uses external three-wire power. Parasite-powered sensors are not su
 | Backlight | 21 (active high) |
 | Reset | Not connected (`-1`) |
 
-The display uses HSPI at 40 MHz, `ILI9341_2_DRIVER`, rotation 1 and colour inversion enabled. These settings are in `platformio.ini`; `DISPLAY_INVERT` can be overridden with a build flag if a different panel requires it.
+Both displays use HSPI at 40 MHz and rotation 1. The ILI9341 profile uses `ILI9341_2_DRIVER` and colour inversion enabled; ST7789 uses `ST7789_DRIVER`, BGR colour order and inversion disabled. These settings are in `platformio.ini`; `DISPLAY_INVERT` can be overridden with a build flag if a different panel requires it.
 
 ## Install a release
 
 The simplest source-based route is PlatformIO, below. Prebuilt binaries are also provided on the [Releases page](https://github.com/Courty40/CYD-Thermometer/releases).
 
-- **`CYD-Thermometer-v1.0.0-full.bin`** is the complete sensor firmware image, including bootloader and partition table. Flash it at **`0x0`**.
-- **`CYD-Thermometer-v1.0.0-app.bin`** is the application only. Flash it at **`0x10000`**, and only when the matching bootloader and partition table are already installed.
-- **`CYD-Thermometer-v1.0.0-demo-full.bin`** is a complete display demonstration, flashed at **`0x0`**. It does not read the sensor.
-- **`SHA256SUMS.txt`** records the download checksums.
+Choose the controller in the filename:
+
+- **`CYD-Thermometer-v1.1.0-ili9341-full.bin`** — complete ILI9341 sensor firmware, flash at **`0x0`**.
+- **`CYD-Thermometer-v1.1.0-st7789-full.bin`** — complete ST7789 sensor firmware, flash at **`0x0`**.
+- **`…-ili9341-app.bin` / `…-st7789-app.bin`** — application-only files for **`0x10000`**, requiring the matching existing bootloader and partition table.
+- **`…-ili9341-demo-full.bin` / `…-st7789-demo-full.bin`** — complete display demonstrations for **`0x0`**. They do not measure temperature.
+- **`SHA256SUMS.txt`** — checksums for the six files in this release.
+
+A [browser USB installer](https://g1rok.co.uk/Projects/cyd-thermometer/install) is also available on G1ROK. Select the correct display/controller and version before connecting.
 
 Flashing replaces the firmware already on the board. These images are for the original ESP32 with 4 MB flash, not ESP32-S3/C3 boards.
 
@@ -68,7 +84,7 @@ With Python and esptool 4.9.0 installed, connect the board by USB and substitute
 
 ```sh
 python -m pip install esptool==4.9.0
-python -m esptool --chip esp32 --port COM5 --baud 115200 write_flash 0x0 CYD-Thermometer-v1.0.0-full.bin
+python -m esptool --chip esp32 --port COM5 --baud 115200 write_flash 0x0 CYD-Thermometer-v1.1.0-ili9341-full.bin
 ```
 
 On Linux the port may be `/dev/ttyUSB0`. Do not use an application-only image at address zero. A full image replaces the bootloader, partition table and application, but does not promise to erase unrelated flash beyond the image.
@@ -89,7 +105,9 @@ pio run -e cyd -t upload
 pio device monitor -b 115200
 ```
 
-For a simulated display, use `pio run -e demo -t upload`. Restore the real sensor firmware with `pio run -e cyd -t upload` afterwards. The demo always displays a **DEMO** badge and **SIMULATED** caption.
+For ST7789, use `pio run -e cyd_st7789 -t upload`. For an ST7789 simulation, use `pio run -e demo_st7789 -t upload`.
+
+For a simulated ILI9341 display, use `pio run -e demo -t upload`. Restore the real sensor firmware with `pio run -e cyd -t upload` afterwards. The demo always displays a **DEMO** badge and **SIMULATED** caption.
 
 Pinned dependencies: Espressif32 platform 6.12.0 (Arduino), TFT_eSPI 2.5.43, OneWire 2.3.8 and DallasTemperature 4.0.6. PlatformIO installs these automatically.
 
@@ -123,7 +141,9 @@ c++ -std=c++11 -DTHERMOMETER_DEMO=1 -Itests/fakes -Iinclude tests/test_firmware.
 ./thermometer-demo-tests
 ```
 
-To package release files after building both environments, use the PlatformIO Python environment to run `python scripts/package_release.py`. Generated files go in `dist/` and are not committed.
+Repeat the host commands with `-DST7789_DRIVER=1` to test the ST profile. Run `python scripts/check_profiles.py` to check the resolved PlatformIO driver/wiring settings.
+
+To package release files after building all four environments, use the PlatformIO Python environment to run `python scripts/package_release.py`. Generated files go in `dist/` and are not committed.
 
 ## Credits
 
@@ -131,4 +151,4 @@ Created by Paul, **G1ROK**. Built with [TFT_eSPI](https://github.com/Bodmer/TFT_
 
 ## Licensing
 
-The original project source and documentation are available under the [MIT licence](LICENSE), including version 1.0.0. Copyright © 2026 Paul (G1ROK). Third-party libraries retain their own licences.
+The original project source and documentation are available under the [MIT licence](LICENSE), including versions 1.0.0 and 1.1.0. Copyright © 2026 Paul (G1ROK). Third-party libraries retain their own licences.
